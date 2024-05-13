@@ -1,44 +1,28 @@
-# Compiler
 CC = gcc
-
-# Compiler flags
 CFLAGS = -Wall -Wextra -pedantic
+INCLUDES = -Iinclude
 
-# Source files
-SRCS = src/main.c src/vehicle.c
+SRCDIR = src
+OBJDIR = build
+BINDIR = bin
 
-# Object files
-OBJS = $(patsubst src/%.c, build/%.o, $(SRCS))
+SOURCES = $(wildcard $(SRCDIR)/*.c)
+OBJECTS = $(patsubst $(SRCDIR)/%.c,$(OBJDIR)/%.o,$(SOURCES))
+EXECUTABLE = $(BINDIR)/vehicle_manager
 
-# Executable name
-EXECUTABLE = bin/vehicle_manager
+all: directories $(EXECUTABLE)
 
-# Build directory
-BUILD_DIR = build
-BIN_DIR = bin
+directories:
+	@mkdir -p $(OBJDIR) $(BINDIR)
 
-# Default target
-all: $(EXECUTABLE)
+$(EXECUTABLE): $(OBJECTS)
+	$(CC) $(CFLAGS) $(INCLUDES) $(OBJECTS) -o $(EXECUTABLE)
 
-# Rule to build the executable
-$(EXECUTABLE): $(OBJS) | $(BIN_DIR)
-	$(CC) $(CFLAGS) -o $@ $^ -Iinclude
+$(OBJDIR)/%.o: $(SRCDIR)/%.c
+	@mkdir -p $(@D)
+	$(CC) $(CFLAGS) $(INCLUDES) -c $< -o $@
 
-# Rule to compile source files
-$(BUILD_DIR)/%.o: src/%.c include/vehicle.h | $(BUILD_DIR)
-	$(CC) $(CFLAGS) -c -o $@ $< -Iinclude
-
-# Create build directory if it doesn't exist
-$(BUILD_DIR):
-	mkdir -p $@
-
-# Create bin directory if it doesn't exist
-$(BIN_DIR):
-	mkdir -p $@
-
-# Clean target
 clean:
-	rm -rf $(BUILD_DIR) $(BIN_DIR)
+	rm -rf $(OBJDIR) $(BINDIR)
 
-# Phony targets
-.PHONY: all clean
+.PHONY: all clean directories
